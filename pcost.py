@@ -19,5 +19,8 @@ def portfolio_cost(input_file: str) -> float:
     return total_price
 
 
-print(portfolio_cost(r"Data/portfolio3.dat"))
+# print(portfolio_cost(r"Data/portfolio3.dat"))
 # print(total_price)
+
+if __name__ == "__main__":
+    print(portfolio_cost(r"Data/portfolio.dat"))
