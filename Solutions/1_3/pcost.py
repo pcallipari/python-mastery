@@ -2,7 +2,9 @@
 
 total_cost = 0.0
 
-with open('../../Data/portfolio.dat', 'r') as f:
+with open(
+    r"C:\Users\Mad Machine Mini\Programming\python-mastery\Data\portfolio.dat", "r"
+) as f:
     for line in f:
         fields = line.split()
         nshares = int(fields[1])
