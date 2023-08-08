@@ -23,3 +23,11 @@ class MutInt:
             return MutInt(self.value + other)
         else:
             return NotImplemented
+
+    def __int__(self):
+        return self.value
+
+    def __float__(self):
+        return float(self.value)
+
+    __index__ = __int__
