@@ -1,13 +1,8 @@
 # readrides.py
 
 import csv
-
-# import collections
 import collections.abc
-
-# from collections import namedtuple
-
-# Row = namedtuple("Row", ["route", "date", "daytype", "rides"])
+from sys import intern
 
 
 class RideData(collections.abc.Sequence):
@@ -43,9 +38,9 @@ class RideData(collections.abc.Sequence):
             raise TypeError
 
     def append(self, d):
-        self.routes.append(d["route"])
-        self.dates.append(d["date"])
-        self.daytypes.append(d["daytype"])
+        self.routes.append(intern(d["route"]))
+        self.dates.append(intern(d["date"]))
+        self.daytypes.append(intern(d["daytype"]))
         self.numrides.append(d["rides"])
 
 
@@ -103,16 +98,6 @@ def read_rides_as_dicts(filename):
     return records
 
 
-if __name__ == "__main__":
-    import tracemalloc
-
-    tracemalloc.start()
-    rows = read_rides_as_dicts("Data/ctabus.csv")
-    print("Memory Use: Current %d, Peak %d" % tracemalloc.get_traced_memory())
-    r = rows[0:10]
-    # records = RideData()
-
-
 def read_rides_as_columns(filename):
     """Read the bus ride data into 4 lists, representing columns."""
     routes = []
@@ -129,3 +114,59 @@ def read_rides_as_columns(filename):
             daytypes.append(row[2])
             numrides.append(row[3])
     return dict(routes=routes, dates=dates, daytypes=daytypes, numrides=numrides)
+
+
+class DataCollection(collections.abc.Sequence):
+    def __init__(self, headers, types):
+        self.types = types
+        self.headers = headers
+        self.data = {key: [] for key in headers}
+        # print()
+
+    def __len__(self):
+        # All lists assumed to have the same length
+        return len(self.data.items[0])
+
+    def __getitem__(self, index):
+        if isinstance(index, int):
+            return {name: self.data[name][index] for name in self.headers}
+        elif isinstance(index, slice):
+            return_data = DataCollection(self.headers, self.types)
+            if index.step is None:
+                indices = range(index.start, index.stop)
+            else:
+                indices = range(index.start, index.stop, index.step)
+            for i in indices:
+                return_data.append(self[i])
+            return return_data
+        else:
+            raise TypeError
+
+    def append(self, d):
+        for key, func in zip(d.keys(), self.types):
+            self.data[key].append(func(d[key]))
+
+
+def read_csv_as_columns(filename, types):
+    with open(filename) as f:
+        rows = csv.reader(f)
+        headers = next(rows)
+        output_data = DataCollection(headers, types)
+        for row in rows:
+            vals = [func(val) for func, val in zip(types, row)]
+            output_data.append({name: val for name, val in zip(headers, vals)})
+    return output_data
+
+
+if __name__ == "__main__":
+    import tracemalloc
+
+    # tracemalloc.start()
+    # rows = read_rides_as_dicts("Data/ctabus.csv")
+    # print("Memory Use: Current %d, Peak %d" % tracemalloc.get_traced_memory())
+    # r = rows[0:10]
+    # records = RideData()
+
+    data = read_csv_as_columns("Data/ctabus.csv", types=[str, str, str, int])
+    print(data)
+    print(data[0])
