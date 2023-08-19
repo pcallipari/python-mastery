@@ -45,6 +45,19 @@ class Stock:
             raise ValueError
         self._price = value
 
+    def __repr__(self) -> str:
+        return "Stock({},{},{})".format(self.name, self.shares, self.price)
+
+    def __eq__(self, other) -> bool:
+        if isinstance(other, Stock):
+            if (self.name, self.shares, self.price) == (
+                other.name,
+                other.shares,
+                other.price,
+            ):
+                return True
+        return False
+
     @property
     def cost(self):
         return self.shares * self.price
@@ -60,6 +73,22 @@ class Stock:
 
 class DStock(Stock):
     _types = (str, int, Decimal)
+
+
+import sys
+
+
+class redirect_stdout:
+    def __init__(self, out_file):
+        self.out_file = out_file
+
+    def __enter__(self):
+        self.stdout = sys.stdout
+        sys.stdout = self.out_file
+        return self.out_file
+
+    def __exit__(self, ty, val, tb):
+        sys.stdout = self.stdout
 
 
 def read_portfolio(filename: str):
